@@ -1,9 +1,8 @@
 name: Scraping Rotten Tomatoes
 
 on:
-  workflow_dispatch:
-    schedule:
-      - cron: '*/10 * * * *'
+  schedule:
+    - cron: '*/10 * * * *'
 
 permissions:
   contents: write 

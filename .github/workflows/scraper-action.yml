@@ -2,7 +2,7 @@ name: Scraping Rotten Tomatoes
 
 on:
   schedule:
-    - cron: '11 */1 * * *'
+    - cron: '13 13 * * *'
 
 permissions:
   contents: write 

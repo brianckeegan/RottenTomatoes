@@ -10,6 +10,8 @@ chrome_service = ChromeService(ChromeDriverManager().install())
 
 # Set up options to run the driver in "headless" mode (no window) and with minimal logging
 chrome_options = webdriver.ChromeOptions()
+
+chrome_options.page_load_strategy = 'eager'
 chrome_options.add_argument('--headless')
 chrome_options.add_argument("--log-level=3")
 

@@ -1,8 +1,7 @@
 name: Scraping Rotten Tomatoes
 
 on:
-  schedule:
-    - cron: '13 13 * * *'
+  worklow_dispatch:
 
 permissions:
   contents: write 

@@ -1,26 +1,13 @@
 # Load libraries
-import json, datetime, time, os
+import json, datetime, time, os, requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
-
-# Download and install the Chrome driver
-chrome_service = ChromeService(ChromeDriverManager().install())
-
-# Set up options to run the driver in "headless" mode (no window) and with minimal logging
-chrome_options = webdriver.ChromeOptions()
-
-chrome_options.page_load_strategy = 'eager'
-chrome_options.add_argument('--headless')
-chrome_options.add_argument("--log-level=3")
 
 # Record the current time
 current_timestamp = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
 # Hard-code in the URL we want
 # TODO: Soften this so we can get the information about any movie
-movie_url = 'https://www.rottentomatoes.com/m/the_marvels'
+movie_url = 'https://www.rottentomatoes.com/m/venom_the_last_dance'
 
 def rotten_tomatoes_soup(url):
     """
@@ -28,27 +15,18 @@ def rotten_tomatoes_soup(url):
 
     Takes `url` as a string and returns a Soup object.
     """
-    # Launch the driver
-    driver = webdriver.Chrome(options = chrome_options, service=chrome_service)
-    
     # Make the request
-    driver.get(url)
-
+    raw = requests.get(url).text
+    
     # Wait a few seconds for the page to load completely
     time.sleep(3)
     
-    # Get source
-    raw = driver.page_source.encode('utf-8')
-    
     # Convert to Soup
     soup = BeautifulSoup(raw,features='html.parser')
-    
-    # Quit the driver
-    driver.quit()
 
     return soup
 
-def parse_data(soup,tag,ts):
+def parse_data(soup,ts):
     """
     A function for converting parsing the Soup of a Rotten Tomatoes page into a dictionary.
 
@@ -59,17 +37,13 @@ def parse_data(soup,tag,ts):
     Returns a dictionary with "timestamp", "average_rating", "liked_count", "not_liked_count",
       "rating_count", "review_count", and "value" keys.
     """
-    details = soup.find(tag)
     
     details_d = {}
     details_d['timestamp'] = ts
-    details_d['average_rating'] = float(details['averagerating'])
-    details_d['liked_count'] = int(details['likedcount'])
-    details_d['not_liked_count'] = int(details['notlikedcount'])
-    details_d['rating_count'] = int(details['ratingcount'])
-    details_d['review_count'] = int(details['reviewcount'])
-    details_d['value'] = int(details['value'])
-
+    details_d['critics_score'] = soup.find('rt-text',{'slot':'criticsScore'}).text
+    details_d['critics_count'] = soup.find('rt-link',{'slot':'criticsReviews'}).text.strip()
+    details_d['audience_score'] = soup.find('rt-text',{'slot':'audienceScore'}).text
+    details_d['audience_counts'] = soup.find('rt-link',{'slot':'audienceReviews'}).text.strip()
     return details_d
 
 def update_data(filename,data):
@@ -100,11 +74,9 @@ def main():
       and create/update the JSON files for critics and audience.
     """
     soup = rotten_tomatoes_soup(movie_url)
-    critics_data = parse_data(soup=soup,tag='score-details-critics-deprecated',ts=current_timestamp)
-    audience_data = parse_data(soup=soup,tag='score-details-audience-deprecated',ts=current_timestamp)
+    data = parse_data(soup=soup,ts=current_timestamp)
     
-    update_data('critics.json',critics_data)
-    update_data('audience.json',audience_data)
+    update_data('data.json',data)
 
 if __name__ == "__main__":
     main()

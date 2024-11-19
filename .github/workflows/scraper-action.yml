@@ -1,4 +1,4 @@
-name: Scraping Rotten Tomatoes
+name: Scraping Rotten Tomatoes v2
 
 on:
   worklow_dispatch:

@@ -1,7 +1,7 @@
 name: Scraping Rotten Tomatoes v2
 
 on:
-  worklow_dispatch:
+  workflow_dispatch:
 
 permissions:
   contents: write 
